@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Fullscreen } from 'lucide-react';
 
 function PomodoroTimer() {
     const [minutes, setMinutes] = useState(25);
@@ -67,10 +68,17 @@ function PomodoroTimer() {
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
             }}
         >
-            <h3 style={{ margin: '0 0 10px 0', color: isBreak ? '#10b981' : '#ef4444' }}>
-                {isBreak ? "☕ 休憩モード" : "🍅 ポモドーロタイマー"}
-            </h3>
-
+            <div style={{ display: 'flex' }}>
+                <h3 style={{ margin: '0 0 10px 0', color: isBreak ? '#10b981' : '#ef4444' }}>
+                    {isBreak ? "☕ 休憩モード" : "ポモドーロタイマー"}
+                </h3>
+                <button
+                    onClick={toggleFullscreen}
+                    style={{ padding: '10px 20px', background: '#fff', color: '#2b2b2b', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                >
+                    <Fullscreen />
+                </button>
+            </div>
             <div style={{ fontSize: '72px', fontWeight: 'bold', margin: '20px 0', color: '#1e293b' }}>
                 {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
             </div>
@@ -88,14 +96,8 @@ function PomodoroTimer() {
                 >
                     リセット
                 </button>
-                <button
-                    onClick={toggleFullscreen}
-                    style={{ padding: '10px 20px', background: '#1e293b', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                >
-                    全画面表示
-                </button>
             </div>
-        </div>
+        </div >
     );
 }
 
