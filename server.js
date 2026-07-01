@@ -27,7 +27,7 @@ ensureUsers();
 
 // 1. ユーザー一覧取得
 app.get("/api/users", async (req, res) => {
-  const users = await prisma.user.findMany({ orderBy: { id: 'asc' }});
+  const users = await prisma.user.findMany({ orderBy: { id: 'asc' } });
   res.json(users);
 });
 
