@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTheme } from '../context/ThemeContext';
+import toast from 'react-hot-toast';
 
 function PomodoroTimer() {
+  const { isDarkMode, colors } = useTheme();
   const [minutes, setMinutes] = useState(25);
   const [seconds, setSeconds] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const [isBreak, setIsBreak] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false); // ダークモード状態
   const timerRef = useRef(null);
 
   const playSound = () => {
@@ -25,7 +27,11 @@ function PomodoroTimer() {
             setMinutes(nextBreak ? 5 : 25);
             setSeconds(0);
             setIsActive(true);
-            alert(nextBreak ? "休憩に入ります！" : "作業再開！");
+
+            toast.success(nextBreak ? "お疲れ様！5分休憩に入ります。" : "休憩終了！作業再開！", {
+              icon: nextBreak ? '☕' : '🍅',
+              duration: 5000,
+            });
           } else {
             setMinutes(minutes - 1);
             setSeconds(59);
@@ -42,7 +48,7 @@ function PomodoroTimer() {
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
-      timerRef.current.requestFullscreen().catch(err => alert(`失敗: ${err.message}`));
+      timerRef.current.requestFullscreen().catch(err => toast.error(`失敗: ${err.message}`));
     } else {
       document.exitFullscreen();
     }
@@ -53,56 +59,39 @@ function PomodoroTimer() {
       ref={timerRef}
       className="timer-container"
       style={{
-        background: isDarkMode ? '#1f2937' : '#fff',
-        color: isDarkMode ? '#f9fafb' : '#1e293b',
-        padding: '20px',
-        borderRadius: '8px',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-        textAlign: 'center',
-        position: 'relative', // ボタン配置のために必要
-        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        transition: 'background 0.3s'
+        background: colors.cardBg, color: colors.text, padding: '24px', borderRadius: '8px',
+        border: `1px solid ${colors.border}`, textAlign: 'center', position: 'relative',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
       }}
     >
-      {/* 画面右上のツールボタンエリア */}
-      <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '5px' }}>
-        <button onClick={() => setIsDarkMode(!isDarkMode)} style={{ cursor: 'pointer', background: 'transparent', border: '1px solid #94a3b8', borderRadius: '4px', padding: '4px 8px', color: isDarkMode ? '#fff' : '#000' }}>
-          {isDarkMode ? '☀️' : '🌙'}
-        </button>
-        <button onClick={toggleFullscreen} style={{ cursor: 'pointer', background: 'transparent', border: '1px solid #94a3b8', borderRadius: '4px', padding: '4px 8px', color: isDarkMode ? '#fff' : '#000' }}>
-          ⛶
+      <div style={{ position: 'absolute', top: '15px', right: '15px' }}>
+        <button onClick={toggleFullscreen} style={{ background: 'transparent', border: `1px solid ${colors.border}`, borderRadius: '4px', padding: '6px 10px', color: colors.text }}>
+          ⛶ 全画面
         </button>
       </div>
 
       <h3 style={{ margin: '0 0 10px 0', color: isBreak ? '#10b981' : '#ef4444' }}>
         {isBreak ? "☕ 休憩モード" : "🍅 ポモドーロタイマー"}
       </h3>
-      
-      {/* タイマー表示（全画面時に大きくなるようCSSクラスを設定） */}
+
       <div className="timer-text" style={{ fontSize: '72px', fontWeight: 'bold', margin: '20px 0' }}>
         {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
       </div>
 
       <div style={{ display: 'flex', gap: '10px' }}>
-        <button onClick={() => setIsActive(!isActive)} style={{ padding: '10px 20px', background: isActive ? '#64748b' : '#2563eb', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+        <button onClick={() => setIsActive(!isActive)} style={{ padding: '12px 24px', background: isActive ? '#64748b' : '#2563eb', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold' }}>
           {isActive ? "一時停止" : "スタート"}
         </button>
-        <button onClick={() => { setIsActive(false); setMinutes(isBreak ? 5 : 25); setSeconds(0); }} style={{ padding: '10px 20px', background: isDarkMode ? '#374151' : '#e2e8f0', color: isDarkMode ? '#fff' : '#334155', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+        <button onClick={() => { setIsActive(false); setMinutes(isBreak ? 5 : 25); setSeconds(0); }} style={{ padding: '12px 24px', background: isDarkMode ? '#374151' : '#e2e8f0', color: colors.text, border: 'none', borderRadius: '6px', fontWeight: 'bold' }}>
           リセット
         </button>
       </div>
 
-      {/* フルスクリーン時のスタイル制御用スタイルタグ */}
       <style>{`
-        .timer-container:fullscreen {
-          background-color: ${isDarkMode ? '#000' : '#fff'} !important;
-        }
-        .timer-text:fullscreen {
-          font-size: 20vw !important; /* 全画面時は画面幅の20%の大きさにする */
-        }
+        .timer-container:fullscreen { background-color: ${isDarkMode ? '#000' : '#fff'} !important; border: none !important; }
+        .timer-text:fullscreen { font-size: 25vw !important; }
       `}</style>
     </div>
   );
 }
-
 export default PomodoroTimer;

@@ -49,14 +49,9 @@ function TaskBoard({ tasks, users, onTaskUpdate }) {
         return "完了";
     };
 
-    // フィルタリングロジック
     const filteredTasks = tasks.filter(task => {
-        // 1. 「すべてのタスク」の時は全部表示
         if (filterUserId === "ALL") return true;
-        // 2. 「担当者なし (全員共通)」のみを表示したい場合
         if (filterUserId === "UNASSIGNED") return task.assignments.length === 0;
-        // 3. 特定のユーザーを選択時：
-        // 「そのユーザーのタスク」 OR 「担当者なし(全員共通)のタスク」を表示
         const isAssignedToUser = task.assignments.some(a => a.userId.toString() === filterUserId);
         const isUnassigned = task.assignments.length === 0;
         return isAssignedToUser || isUnassigned;
