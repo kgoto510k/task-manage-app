@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import toast from 'react-hot-toast';
 
-function PomodoroTimer() {
+function PomodoroTimer({ activeTaskName, setActiveTaskName }) {
   const { isDarkMode, colors } = useTheme();
   const [minutes, setMinutes] = useState(25);
   const [seconds, setSeconds] = useState(0);
@@ -27,10 +27,11 @@ function PomodoroTimer() {
             setMinutes(nextBreak ? 5 : 25);
             setSeconds(0);
             setIsActive(true);
-
-            toast.success(nextBreak ? "お疲れ様！5分休憩に入ります。" : "休憩終了！作業再開！", {
+            
+            const taskContext = activeTaskName ? `「${activeTaskName}」の` : "";
+            toast.success(nextBreak ? `${taskContext}作業お疲れ様！5分休憩に入ります。` : "休憩終了！作業再開！", {
               icon: nextBreak ? '☕' : '🍅',
-              duration: 5000,
+              duration: 6000,
             });
           } else {
             setMinutes(minutes - 1);
@@ -44,7 +45,7 @@ function PomodoroTimer() {
       clearInterval(interval);
     }
     return () => clearInterval(interval);
-  }, [isActive, minutes, seconds, isBreak]);
+  }, [isActive, minutes, seconds, isBreak, activeTaskName]);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -70,11 +71,36 @@ function PomodoroTimer() {
         </button>
       </div>
 
-      <h3 style={{ margin: '0 0 10px 0', color: isBreak ? '#10b981' : '#ef4444' }}>
+      <h3 style={{ margin: '0 0 5px 0', color: isBreak ? '#10b981' : '#ef4444' }}>
         {isBreak ? "☕ 休憩モード" : "🍅 ポモドーロタイマー"}
       </h3>
 
-      <div className="timer-text" style={{ fontSize: '72px', fontWeight: 'bold', margin: '20px 0' }}>
+      <div style={{ 
+        margin: '10px 0 5px 0', 
+        padding: '6px 12px', 
+        borderRadius: '20px', 
+        fontSize: '14px', 
+        background: activeTaskName ? (isDarkMode ? '#1e3a8a' : '#eff6ff') : 'transparent',
+        color: activeTaskName ? (isDarkMode ? '#93c5fd' : '#1e40af') : colors.text,
+        border: activeTaskName ? '1px solid currentColor' : 'none',
+        maxWidth: '80%',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis'
+      }}>
+        {activeTaskName ? `🎯 実行中: ${activeTaskName}` : "💡 タスクボードから取り組むタスクを選ぼう"}
+        {activeTaskName && (
+          <span 
+            onClick={() => setActiveTaskName(null)} 
+            style={{ marginLeft: '8px', cursor: 'pointer', fontWeight: 'bold', opacity: 0.6 }}
+            title="選択を解除"
+          >
+            ✕
+          </span>
+        )}
+      </div>
+      
+      <div className="timer-text" style={{ fontSize: '72px', fontWeight: 'bold', margin: '15px 0 20px 0' }}>
         {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
       </div>
 
