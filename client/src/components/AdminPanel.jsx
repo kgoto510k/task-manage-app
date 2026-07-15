@@ -6,6 +6,7 @@ function AdminPanel({ users, tasks, onUpdate }) {
     const [expandedTaskId, setExpandedTaskId] = useState(null);
     const [editingTaskId, setEditingTaskId] = useState(null);
     const [editingTaskTitle, setEditingTaskTitle] = useState('');
+    const [editingTaskAssigneeIds, setEditingTaskAssigneeIds] = useState([]);
     const [editingCommentId, setEditingCommentId] = useState(null);
     const [editingCommentContent, setEditingCommentContent] = useState('');
 
@@ -43,11 +44,19 @@ function AdminPanel({ users, tasks, onUpdate }) {
     const startEditTask = (task) => {
         setEditingTaskId(task.id);
         setEditingTaskTitle(task.title);
+        setEditingTaskAssigneeIds(task.assignments.map(a => a.userId));
     };
 
     const cancelEditTask = () => {
         setEditingTaskId(null);
         setEditingTaskTitle('');
+        setEditingTaskAssigneeIds([]);
+    };
+
+    const toggleEditingAssignee = (userId) => {
+        setEditingTaskAssigneeIds(prev =>
+            prev.includes(userId) ? prev.filter(id => id !== userId) : [...prev, userId]
+        );
     };
 
     const handleSaveTask = async (id) => {
@@ -56,7 +65,7 @@ function AdminPanel({ users, tasks, onUpdate }) {
             await fetch(`/api/tasks/${id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title: editingTaskTitle })
+                body: JSON.stringify({ title: editingTaskTitle, userIds: editingTaskAssigneeIds })
             });
             cancelEditTask();
             onUpdate();
@@ -173,28 +182,47 @@ function AdminPanel({ users, tasks, onUpdate }) {
                         const comments = task.comments || [];
                         return (
                             <li key={task.id} style={{ padding: '10px 0', borderBottom: '1px solid #e2e8f0' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
-                                    {isEditingTitle ? (
-                                        <>
-                                            <input
-                                                type="text" value={editingTaskTitle}
-                                                onChange={(e) => setEditingTaskTitle(e.target.value)}
-                                                style={{ flex: 1, padding: '6px 8px', border: '1px solid #cbd5e1', borderRadius: '4px' }}
-                                            />
+                                {isEditingTitle ? (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                        <input
+                                            type="text" value={editingTaskTitle}
+                                            onChange={(e) => setEditingTaskTitle(e.target.value)}
+                                            style={{ padding: '6px 8px', border: '1px solid #cbd5e1', borderRadius: '4px' }}
+                                        />
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px', fontSize: '12px' }}>
+                                            <span style={{ color: '#64748b' }}>担当者:</span>
+                                            {users.map(u => (
+                                                <label key={u.id} style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={editingTaskAssigneeIds.includes(u.id)}
+                                                        onChange={() => toggleEditingAssignee(u.id)}
+                                                    />
+                                                    {u.name}
+                                                </label>
+                                            ))}
+                                            {(!users || users.length === 0) && <span style={{ color: '#94a3b8' }}>担当者候補がいません</span>}
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '8px' }}>
                                             <button onClick={() => handleSaveTask(task.id)} style={{ background: '#dbeafe', color: '#1e40af', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>保存</button>
                                             <button onClick={cancelEditTask} style={{ background: '#f1f5f9', color: '#475569', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>キャンセル</button>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <span style={{ flex: 1 }}>{task.title}</span>
-                                            <button onClick={() => toggleTaskComments(task.id)} style={{ background: 'transparent', border: '1px solid #cbd5e1', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
-                                                💬 {comments.length}
-                                            </button>
-                                            <button onClick={() => startEditTask(task)} style={{ background: '#dbeafe', color: '#1e40af', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>編集</button>
-                                            <button onClick={() => handleDeleteTask(task.id, task.title)} style={{ background: '#fee2e2', color: '#991b1b', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>削除</button>
-                                        </>
-                                    )}
-                                </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                                        <span style={{ flex: 1 }}>
+                                            {task.title}
+                                            <span style={{ marginLeft: '8px', fontSize: '11px', color: '#64748b' }}>
+                                                {task.assignments.length > 0 ? task.assignments.map(a => `@${a.user.name}`).join(' ') : '（担当者なし）'}
+                                            </span>
+                                        </span>
+                                        <button onClick={() => toggleTaskComments(task.id)} style={{ background: 'transparent', border: '1px solid #cbd5e1', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
+                                            💬 {comments.length}
+                                        </button>
+                                        <button onClick={() => startEditTask(task)} style={{ background: '#dbeafe', color: '#1e40af', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>編集</button>
+                                        <button onClick={() => handleDeleteTask(task.id, task.title)} style={{ background: '#fee2e2', color: '#991b1b', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>削除</button>
+                                    </div>
+                                )}
 
                                 {isExpanded && (
                                     <div style={{ marginTop: '10px', marginLeft: '16px', paddingLeft: '12px', borderLeft: '2px solid #e2e8f0' }}>
