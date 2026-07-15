@@ -53,7 +53,7 @@ function App() {
         </header>
 
         {isAdminMode ? (
-          <AdminPanel users={users} onUpdate={triggerRefresh} />
+          <AdminPanel users={users} tasks={tasks} onUpdate={triggerRefresh} />
         ) : (
           <>
             <div className="top-widgets">
