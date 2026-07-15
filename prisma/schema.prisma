@@ -13,6 +13,7 @@ model User {
   email     String           @unique
   role      String           @default("MEMBER") // ADMIN(管理者) または MEMBER(一般)
   tasks     TaskAssignment[]
+  comments  Comment[]
   createdAt DateTime         @default(now())
 }
 
@@ -25,7 +26,18 @@ model Task {
   meetingId   Int?
   meeting     Meeting?         @relation(fields: [meetingId], references: [id])
   assignments TaskAssignment[]
+  comments    Comment[]
   createdAt   DateTime         @default(now())
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String
+  taskId    Int
+  userId    Int
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 }
 
 model Meeting {
