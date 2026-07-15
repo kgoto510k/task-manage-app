@@ -133,7 +133,7 @@ app.post("/api/meetings", async (req, res) => {
   }
 });
 
-//  コメント投稿
+// [NEW] コメント投稿
 app.post("/api/comments", async (req, res) => {
   const { taskId, userId, content } = req.body;
   if (!taskId || !userId || !content || !content.trim()) {
@@ -145,6 +145,34 @@ app.post("/api/comments", async (req, res) => {
       include: { user: true },
     });
     res.json(comment);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// [NEW] コメント編集
+app.patch("/api/comments/:id", async (req, res) => {
+  const { content } = req.body;
+  if (!content || !content.trim()) {
+    return res.status(400).json({ error: "content は必須です" });
+  }
+  try {
+    const comment = await prisma.comment.update({
+      where: { id: parseInt(req.params.id) },
+      data: { content },
+      include: { user: true },
+    });
+    res.json(comment);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// [NEW] コメント削除
+app.delete("/api/comments/:id", async (req, res) => {
+  try {
+    await prisma.comment.delete({ where: { id: parseInt(req.params.id) } });
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
