@@ -60,6 +60,7 @@ app.get("/api/tasks", async (req, res) => {
     include: {
       assignments: { include: { user: true } },
       meeting: true,
+      comments: { include: { user: true }, orderBy: { createdAt: "asc" } },
     },
     orderBy: { createdAt: "desc" },
   });
@@ -127,6 +128,23 @@ app.post("/api/meetings", async (req, res) => {
       }
     }
     res.json({ success: true, meeting, tasksCount: extractedTasks.length });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+//  コメント投稿
+app.post("/api/comments", async (req, res) => {
+  const { taskId, userId, content } = req.body;
+  if (!taskId || !userId || !content || !content.trim()) {
+    return res.status(400).json({ error: "taskId, userId, content は必須です" });
+  }
+  try {
+    const comment = await prisma.comment.create({
+      data: { taskId: parseInt(taskId), userId: parseInt(userId), content },
+      include: { user: true },
+    });
+    res.json(comment);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
