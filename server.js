@@ -70,11 +70,27 @@ app.get("/api/tasks", async (req, res) => {
 // 3. タスクの更新
 app.patch("/api/tasks/:id", async (req, res) => {
   const { id } = req.params;
-  const { status, deadline, title } = req.body;
+  const { status, deadline, title, userIds } = req.body;
   try {
-    const updatedTask = await prisma.task.update({
+    await prisma.task.update({
       where: { id: parseInt(id) },
       data: { status, deadline, title },
+    });
+    if (userIds !== undefined) {
+      await prisma.taskAssignment.deleteMany({ where: { taskId: parseInt(id) } });
+      if (userIds.length > 0) {
+        await prisma.taskAssignment.createMany({
+          data: userIds.map((userId) => ({ taskId: parseInt(id), userId: parseInt(userId) })),
+        });
+      }
+    }
+    const updatedTask = await prisma.task.findUnique({
+      where: { id: parseInt(id) },
+      include: {
+        assignments: { include: { user: true } },
+        meeting: true,
+        comments: { include: { user: true }, orderBy: { createdAt: "asc" } },
+      },
     });
     res.json(updatedTask);
   } catch (err) {
