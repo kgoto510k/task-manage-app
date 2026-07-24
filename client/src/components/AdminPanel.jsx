@@ -62,25 +62,36 @@ function AdminPanel({ users, tasks, onUpdate }) {
     const handleSaveTask = async (id) => {
         if (!editingTaskTitle.trim()) return;
         try {
-            await fetch(`/api/tasks/${id}`, {
+            const res = await fetch(`/api/tasks/${id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ title: editingTaskTitle, userIds: editingTaskAssigneeIds })
             });
+            if (!res.ok) {
+                alert("タスクの更新に失敗しました");
+                return;
+            }
+
             cancelEditTask();
             onUpdate();
         } catch (err) {
             console.error(err);
+            alert("タスクの更新に失敗しました");
         }
     };
 
     const handleDeleteTask = async (id, title) => {
         if (!window.confirm(`タスク「${title}」を削除してもよろしいですか？関連するコメントも削除されます。`)) return;
         try {
-            await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
+            const res = await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
+            if (!res.ok) {
+                alert("タスクの削除に失敗しました");
+                return;
+            }
             onUpdate();
         } catch (err) {
             console.error(err);
+            alert("タスクの削除に失敗しました");
         }
     };
 
@@ -102,25 +113,35 @@ function AdminPanel({ users, tasks, onUpdate }) {
     const handleSaveComment = async (id) => {
         if (!editingCommentContent.trim()) return;
         try {
-            await fetch(`/api/comments/${id}`, {
+            const res = await fetch(`/api/comments/${id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ content: editingCommentContent })
             });
+            if (!res.ok) {
+                alert("コメントの更新に失敗しました");
+                return;
+            }
             cancelEditComment();
             onUpdate();
         } catch (err) {
             console.error(err);
+            alert("コメントの更新に失敗しました");
         }
     };
 
     const handleDeleteComment = async (id) => {
         if (!window.confirm('このコメントを削除してもよろしいですか？')) return;
         try {
-            await fetch(`/api/comments/${id}`, { method: 'DELETE' });
+            const res = await fetch(`/api/comments/${id}`, { method: 'DELETE' });
+            if (!res.ok) {
+                alert("コメントの削除に失敗しました");
+                return;
+            }
             onUpdate();
         } catch (err) {
             console.error(err);
+            alert("コメントの削除に失敗しました");
         }
     };
 
